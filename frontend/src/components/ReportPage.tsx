@@ -13,6 +13,9 @@ const ReportPage: React.FC = () => {
     }
 
     try {
+      console.log(`is init :: ${initialized}`)
+      console.log(`is auth :: ${keycloak.authenticated}`)
+      console.log(`token :: ${keycloak.token}`)
       setLoading(true);
       setError(null);
 
