@@ -5,6 +5,7 @@ networks:
     driver: bridge
 
 services:
+
   keycloak_db:
     image: postgres:14
     environment:
@@ -20,6 +21,7 @@ services:
 
   keycloak:
     image: quay.io/keycloak/keycloak:21.1
+    hostname: keycloak
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
@@ -27,6 +29,7 @@ services:
       KC_DB_URL: jdbc:postgresql://keycloak_db:5432/keycloak_db
       KC_DB_USERNAME: keycloak_user
       KC_DB_PASSWORD: keycloak_password
+      KC_HOSTNAME: localhost
     command: 
       - start-dev
       - --import-realm

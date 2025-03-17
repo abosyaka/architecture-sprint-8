@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
@@ -26,7 +25,12 @@ public class ReportController {
 	private final RestTemplate restTemplate;
 
 	public ReportController(RestTemplateBuilder builder) {
-		this.restTemplate = builder.build();
+		this.restTemplate = builder
+			.basicAuthentication(
+				"reports-api",
+				"oNwoLQdvJAvRcL89SydqCWCe5ry1jMgq"
+			)
+			.build();
 	}
 
 	@GetMapping
@@ -47,18 +51,14 @@ public class ReportController {
 		log.info("token {}", token);
 		token = token.substring(7);
 
-		String url = "http://localhost:8080/realms/reports-realm/protocol/openid-connect/token/introspect";
+		String url = "http://keycloak:8080/realms/reports-realm/protocol/openid-connect/token/introspect";
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-		String auth = Base64.getEncoder()
-			.encodeToString("reports-api:oNwoLQdvJAvRcL89SydqCWCe5ry1jMgq".getBytes());
-		headers.add("Authorization", "Basic " + auth);
+		headers.add("Host", "localhost");
 
 		MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
 		params.add("token", token);
-		params.add("client_id", "reports-api");
-		params.add("client_secret", "oNwoLQdvJAvRcL89SydqCWCe5ry1jMgq");
 
 		HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(params, headers);
 		log.info("params {}", params);
@@ -70,7 +70,7 @@ public class ReportController {
 
 		Map body = response.getBody();
 
-		if (response.getStatusCode() == HttpStatus.OK && body != null) {
+		if (response.getStatusCode() == HttpStatus.OK && body != null && Boolean.TRUE.equals(body.get("active"))) {
 			return new TokenDto(
 				((List) ((Map) body.get("realm_access")).get("roles")),
 				Boolean.TRUE.equals(body.get("active"))
